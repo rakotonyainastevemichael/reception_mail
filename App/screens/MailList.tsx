@@ -10,7 +10,7 @@ type MailListProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'MailList'>;
 };
 
-const socket = io('https://unexpended-unhabitable-darnell.ngrok-free.dev');
+const socket = io('https://reception-message.onrender.com');
 
 export default function MailList({ navigation }: MailListProps) {
   const [mails, setMails] = useState<Mail[]>([]);

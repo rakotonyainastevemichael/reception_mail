@@ -8,7 +8,7 @@ export interface Mail {
 
 export const fetchMails = async (): Promise<Mail[]> => {
   try {
-    const response = await fetch('https://unexpended-unhabitable-darnell.ngrok-free.dev/mails');
+    const response = await fetch('https://reception-message.onrender.com/mails');
     if (!response.ok) throw new Error('Erreur API mails');
     const mails: Mail[] = await response.json();
     return mails;
