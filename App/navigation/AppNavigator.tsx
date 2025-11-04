@@ -2,10 +2,14 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import MailScreen from '../screens/MailList';
+import MailList from '../screens/MailList';
+import MailDetail from '../screens/MailDetail';
+import WebAppScreen from '../screens/WebAppScreen';
 
 export type RootStackParamList = {
-  Mails: undefined;
+  MailList: undefined;
+  MailDetail: { mail: any };
+  WebApp: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -13,8 +17,10 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const AppNavigator: React.FC = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen name="Mails" component={MailScreen} options={{ title: 'Messagerie' }} />
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="MailList" component={MailList} />
+        <Stack.Screen name="MailDetail" component={MailDetail} />
+        <Stack.Screen name="WebApp" component={WebAppScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

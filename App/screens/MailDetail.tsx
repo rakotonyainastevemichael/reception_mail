@@ -1,38 +1,49 @@
-// src/screens/MailDetail.tsx
 import React from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View, Linking } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
+import FooterNav from '../components/FooterNav';
 
 type MailDetailRouteProp = RouteProp<RootStackParamList, 'MailDetail'>;
 
-type Props = {
-  route: MailDetailRouteProp;
-};
+type Props = { route: MailDetailRouteProp };
 
 export default function MailDetail({ route }: Props) {
-  const { mail } = route.params;
+  const { mail }: { mail?: any } = route.params || {};
 
-  if (!mail) {
+  if (!mail || Object.keys(mail).length === 0) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ color: 'red', fontSize: 16 }}>
-          ❌ Aucun mail sélectionné
-        </Text>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' }}>
+        <Text style={{ color: 'red', fontSize: 16 }}>❌ Aucun mail sélectionné</Text>
+        <FooterNav active="mail" />
       </View>
     );
   }
 
   return (
-    <ScrollView style={{ flex: 1, padding: 20 }}>
-      <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 10 }}>
-        {mail.subject}
-      </Text>
-      <Text style={{ marginBottom: 5, color: '#333' }}>From: {mail.from}</Text>
-      <Text style={{ marginBottom: 5, color: '#333' }}>Date: {mail.date}</Text>
-      <View style={{ marginTop: 20 }}>
-        <Text style={{ lineHeight: 20 }}>{mail.body}</Text>
-      </View>
-    </ScrollView>
+    <View style={{ flex: 1, backgroundColor: '#fff' }}>
+      <ScrollView style={{ flex: 1, padding: 20 }}>
+        <Text style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 10, color: '#000' }}>
+          {mail.sujet}
+        </Text>
+
+        <Text style={{ marginBottom: 5, color: '#333' }}>
+          📧 De : {mail.senderName} ({mail.senderEmail || 'Non précisé'})
+        </Text>
+
+        <Text style={{ marginBottom: 5, color: '#333' }}>🕓 Date : {mail.date}</Text>
+
+        <View style={{ marginTop: 20 }}>
+          <Text style={{ lineHeight: 22, color: '#000' }}>{mail.resume}</Text>
+          {mail.link && (
+            <Text style={{ marginTop: 10, color: '#1a73e8' }} onPress={() => Linking.openURL(mail.link)}>
+              📎 Ouvrir l’email
+            </Text>
+          )}
+        </View>
+      </ScrollView>
+
+      <FooterNav active="mail" />
+    </View>
   );
 }
