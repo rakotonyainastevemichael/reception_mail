@@ -1,13 +1,24 @@
-// screens/WebAppScreen.tsx
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
 import FooterNav from '../components/FooterNav';
+import { supabase } from '../lib/supabaseClient';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation/AppNavigator';
+import { useNavigation } from '@react-navigation/native';
 
 export default function WebAppScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  // Fonction de déconnexion
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigation.replace('Login'); // Redirige vers login après déconnexion
+  };
+
   return (
     <View style={styles.container}>
-      {/* WebView entre label et footer */}
+      {/* WebView */}
       <WebView
         source={{ uri: 'https://ruleweaver-flow.vercel.app/' }}
         style={styles.webview}
@@ -23,8 +34,8 @@ export default function WebAppScreen() {
         `}
       />
 
-      {/* Footer */}
-      <FooterNav active="web" />
+      {/* Footer avec déconnexion */}
+      <FooterNav active="web" onLogout={handleLogout} />
     </View>
   );
 }

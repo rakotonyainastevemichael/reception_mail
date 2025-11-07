@@ -1,21 +1,31 @@
 import React from 'react';
 import { ScrollView, Text, View, Linking } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
-import { RootStackParamList } from '../types';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation/AppNavigator';
 import FooterNav from '../components/FooterNav';
+import { supabase } from '../lib/supabaseClient';
 
 type MailDetailRouteProp = RouteProp<RootStackParamList, 'MailDetail'>;
+type Props = { 
+  route: MailDetailRouteProp;
+  navigation: NativeStackNavigationProp<RootStackParamList, 'MailDetail'>;
+};
 
-type Props = { route: MailDetailRouteProp };
-
-export default function MailDetail({ route }: Props) {
+export default function MailDetail({ route, navigation }: Props) {
   const { mail }: { mail?: any } = route.params || {};
+
+  // Fonction de déconnexion
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigation.replace('Login');
+  };
 
   if (!mail || Object.keys(mail).length === 0) {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' }}>
         <Text style={{ color: 'red', fontSize: 16 }}>❌ Aucun mail sélectionné</Text>
-        <FooterNav active="mail" />
+        <FooterNav active="mail" onLogout={handleLogout} />
       </View>
     );
   }
@@ -43,7 +53,8 @@ export default function MailDetail({ route }: Props) {
         </View>
       </ScrollView>
 
-      <FooterNav active="mail" />
+      {/* Footer avec bouton déconnexion */}
+      <FooterNav active="mail" onLogout={handleLogout} />
     </View>
   );
 }
