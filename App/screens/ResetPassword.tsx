@@ -5,73 +5,65 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { LinearGradient } from 'expo-linear-gradient';
 
-type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
-type Props = { navigation: LoginScreenNavigationProp };
+type ResetPasswordNavigationProp = NativeStackNavigationProp<RootStackParamList, 'ResetPassword'>;
+type Props = { navigation: ResetPasswordNavigationProp; route: any };
 
-export default function Login({ navigation }: Props) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+export default function ResetPassword({ navigation, route }: Props) {
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleLogin = async () => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) Alert.alert('Erreur', error.message);
-    else navigation.replace('MailList');
-  };
-
-  const handleForgotPassword = async () => {
-    if (!email) {
-      Alert.alert('Erreur', 'Veuillez entrer votre email pour réinitialiser le mot de passe.');
+  const handleReset = async () => {
+    if (!newPassword || !confirmPassword) {
+      Alert.alert('Erreur', 'Veuillez remplir tous les champs.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Erreur', 'Les mots de passe ne correspondent pas.');
       return;
     }
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'yourapp://reset-password', // adapter selon ton deep link
-    });
+    const accessToken = route.params?.access_token; // récupéré depuis le lien Supabase
 
+    const { error } = await supabase.auth.updateUser({ password: newPassword }, accessToken);
     if (error) Alert.alert('Erreur', error.message);
-    else Alert.alert('Succès', 'Un email de réinitialisation a été envoyé.');
+    else {
+      Alert.alert('Succès', 'Mot de passe réinitialisé avec succès.');
+      navigation.replace('Login');
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Connexion</Text>
+      <Text style={styles.title}>Réinitialiser le mot de passe</Text>
 
       <TextInput
-        placeholder="Email"
+        placeholder="Nouveau mot de passe"
         style={styles.input}
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        placeholderTextColor="#999"
-      />
-
-      <TextInput
-        placeholder="Mot de passe"
-        style={styles.input}
-        value={password}
-        onChangeText={setPassword}
+        value={newPassword}
+        onChangeText={setNewPassword}
         secureTextEntry
         placeholderTextColor="#999"
       />
 
-      <TouchableOpacity onPress={handleLogin} activeOpacity={0.8}>
+      <TextInput
+        placeholder="Confirmer le mot de passe"
+        style={styles.input}
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+        secureTextEntry
+        placeholderTextColor="#999"
+      />
+
+      <TouchableOpacity onPress={handleReset} activeOpacity={0.8}>
         <LinearGradient
           colors={['#5b36e8', '#af36e8']}
           start={{ x: 0.1, y: 0.8 }}
           end={{ x: 0.9, y: 0.2 }}
           style={styles.linearGradient}
         >
-          <Text style={styles.gradientButtonText}>Se connecter</Text>
+          <Text style={styles.gradientButtonText}>Réinitialiser</Text>
         </LinearGradient>
       </TouchableOpacity>
-
-      <Text style={styles.forgotPassword} onPress={handleForgotPassword}>
-        Mot de passe oublié ?
-      </Text>
-
-      <Text style={styles.signup} onPress={() => navigation.navigate('Signup')}>
-        Pas de compte ? Inscrivez-vous
-      </Text>
     </View>
   );
 }
@@ -103,6 +95,4 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   gradientButtonText: { color: '#fff', fontWeight: '700', fontSize: 17 },
-  forgotPassword: { marginTop: 15, textAlign: 'center', fontSize: 15, color: '#d40000', fontWeight: '500' },
-  signup: { marginTop: 25, textAlign: 'center', fontSize: 15, color: '#5b36e8', fontWeight: '500' },
 });

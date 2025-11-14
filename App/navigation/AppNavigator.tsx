@@ -10,10 +10,11 @@ import MailList from '../screens/MailList';
 import MailDetail from '../screens/MailDetail';
 import WebAppScreen from '../screens/WebAppScreen';
 
-// Nouveaux écrans (à créer si pas encore faits)
+// Nouveaux écrans
 import Assistant from '../screens/Assistant';
 import Planning from '../screens/Planning';
 import Contacts from '../screens/Contacts';
+import ResetPassword from '../screens/ResetPassword'; // nouvel écran
 
 
 export type RootStackParamList = {
@@ -26,6 +27,7 @@ export type RootStackParamList = {
   Planning: undefined;
   Contacts: undefined;
   Rules: undefined;
+  ResetPassword: { access_token?: string }; // token fourni par Supabase
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -42,6 +44,8 @@ const AppNavigator: React.FC = () => {
         <Stack.Screen name="Assistant" component={Assistant} />
         <Stack.Screen name="Planning" component={Planning} />
         <Stack.Screen name="Contacts" component={Contacts} />
+        <Stack.Screen name="ResetPassword" component={ResetPassword} />
+        
       </Stack.Navigator>
     </NavigationContainer>
   );

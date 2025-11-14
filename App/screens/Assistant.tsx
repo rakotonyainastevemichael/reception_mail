@@ -1,10 +1,13 @@
-// /screens/Assistant.tsx
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Button, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { supabase } from '../lib/supabaseClient';
-import MainLayout from '../components/MainLayout';
+import { LinearGradient } from 'expo-linear-gradient';
+import Header from '../components/Header';
+import FooterNav from '../components/FooterNav';
 
-export default function Assistant() {
+const GRADIENT_COLORS = ['#5b36e8', '#af36e8'];
+
+export default function Assistant({ navigation }: any) {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [input, setInput] = useState('');
@@ -20,44 +23,122 @@ export default function Assistant() {
     loadSession();
   }, []);
 
-  if (loading) return <Text style={{ color: '#fff' }}>Loading...</Text>;
+  if (loading) return <Text style={{ color: '#333', flex:1, textAlign:'center', marginTop:50 }}>Loading...</Text>;
 
   const userName = session?.user?.user_metadata?.name || session?.user?.email || 'Utilisateur';
 
-  const handleSend = () => {
-    // ici tu pourrais appeler ton API n8n ou IA
-    setResponses([...responses, `💬 ${input}`, `🤖 Réponse: ${input} reçu !`]);
-    setInput('');
+  const handleSend = async () => {
+    if (!input.trim()) return;
+
+    setResponses(prev => [...prev, `💬 ${input}`]); // message utilisateur
+
+    try {
+      const res = await fetch('https://wfw.omega-connect.tech/webhook-test/3b6aa146-0f24-404f-8ed6-cb580c5d053b', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: session.user.id,
+          userName,
+          question: input,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.response) setResponses(prev => [...prev, `🤖 ${data.response}`]);
+      else setResponses(prev => [...prev, '🤖 Erreur : aucune réponse reçue du serveur.']);
+
+    } catch (error) {
+      console.error('Erreur lors de la requête vers n8n :', error);
+      setResponses(prev => [...prev, '🤖 Erreur : impossible de contacter l’assistant.']);
+    }
+
+    setInput(''); // reset input après envoi
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigation.replace('Login');
   };
 
   return (
-    <MainLayout active="assistant">
-      <View style={styles.container}>
-        <Text style={styles.text}>👋 Bonjour {userName},</Text>
-        <Text style={styles.text}>Je suis ton assistant IA professionnel.</Text>
+    <View style={{ flex:1, backgroundColor:'#f2f2f7' }}>
+      <Header title="Assistant IA" />
 
-        <ScrollView style={{ flex: 1, width: '100%', marginTop: 20 }}>
-          {responses.map((r, i) => (
-            <Text key={i} style={styles.response}>{r}</Text>
-          ))}
-        </ScrollView>
+      <KeyboardAvoidingView
+        style={{ flex:1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <View style={styles.container}>
+          <Text style={styles.title}>👋 Bonjour {userName},</Text>
+          <Text style={styles.subtitle}>Je suis ton assistant IA professionnel.</Text>
 
-        <TextInput
-          style={styles.input}
-          value={input}
-          onChangeText={setInput}
-          placeholder="Posez une question..."
-          placeholderTextColor="#aaa"
-        />
-        <Button title="Envoyer" onPress={handleSend} />
-      </View>
-    </MainLayout>
+          <View style={styles.chatBox}>
+            <ScrollView style={{ flex:1 }}>
+              {responses.map((r, i) => {
+                const isUser = r.startsWith('💬');
+                return (
+                  <View key={i} style={[styles.messageWrapper, isUser && styles.userMessageWrapper]}>
+                    {isUser ? (
+                      <LinearGradient colors={GRADIENT_COLORS} start={{x:0.1,y:0.8}} end={{x:0.9,y:0.2}} style={styles.userMessage}>
+                        <Text style={styles.userMessageText}>{r}</Text>
+                      </LinearGradient>
+                    ) : (
+                      <View style={styles.messageBox}>
+                        <Text style={styles.messageText}>{r}</Text>
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+            </ScrollView>
+          </View>
+
+          <View style={styles.inputRow}>
+            <LinearGradient
+              colors={GRADIENT_COLORS}
+              start={{ x: 0.1, y: 0.8 }}
+              end={{ x: 0.9, y: 0.2 }}
+              style={styles.inputGradient}
+            >
+              <TextInput
+                style={styles.input}
+                value={input}
+                onChangeText={setInput}
+                placeholder="Posez une question..."
+                placeholderTextColor="#fff"
+                multiline
+              />
+            </LinearGradient>
+
+            <TouchableOpacity activeOpacity={0.8} onPress={handleSend} style={styles.sendButton}>
+              <LinearGradient colors={GRADIENT_COLORS} start={{x:0.1,y:0.8}} end={{x:0.9,y:0.2}} style={styles.btnGradient}>
+                <Text style={styles.btnText}>Envoyer</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+
+      <FooterNav active="assistant" onLogout={handleLogout} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'flex-start', backgroundColor: '#121212', padding: 10 },
-  text: { color: '#fff', fontSize: 18, marginVertical: 6 },
-  input: { backgroundColor: '#333', color: '#fff', width: '100%', padding: 10, borderRadius: 8, marginBottom: 10 },
-  response: { color: '#fff', marginVertical: 4 },
+  container: { flex:1, backgroundColor:'#f2f2f7', padding:16 },
+  title: { fontSize:22, fontWeight:'bold', color:'#333' },
+  subtitle: { fontSize:16, color:'#666', marginTop:4 },
+  chatBox: { flex:1, backgroundColor:'#fff', borderRadius:16, padding:12, marginVertical:16, shadowColor:'#000', shadowOpacity:0.08, shadowRadius:10, shadowOffset:{width:-2,height:-2} },
+  messageWrapper: { marginVertical:6 },
+  messageBox: { padding:10, borderRadius:12, backgroundColor:'#f2f2f7', shadowColor:'#000', shadowOpacity:0.05, shadowRadius:5, shadowOffset:{width:-1,height:-1} },
+  messageText: { color:'#333', fontSize:16 },
+  userMessageWrapper: { alignSelf:'flex-end' },
+  userMessage: { padding:10, borderRadius:12, shadowColor:'#5b36e8', shadowOpacity:0.25, shadowRadius:8, elevation:2 },
+  userMessageText: { color:'#fff', fontSize:16 },
+  inputRow: { flexDirection:'row', alignItems:'center', marginTop:8 },
+  inputGradient: { flex:1, borderRadius:20, padding:1, marginRight:8 },
+  input: { paddingHorizontal:12, paddingVertical:10, borderRadius:20, color:'#fff', minHeight:40 },
+  sendButton: { borderRadius:20 },
+  btnGradient: { paddingVertical:12, paddingHorizontal:20, borderRadius:20, alignItems:'center', justifyContent:'center', shadowColor:'#5b36e8', shadowOpacity:0.25, shadowRadius:10, elevation:3 },
+  btnText: { color:'#fff', fontWeight:'bold', fontSize:16 },
 });

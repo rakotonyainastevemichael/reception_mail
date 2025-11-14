@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
+import Header from '../components/Header';
 import FooterNav from '../components/FooterNav';
 import { supabase } from '../lib/supabaseClient';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -18,6 +19,9 @@ export default function WebAppScreen() {
 
   return (
     <View style={styles.container}>
+      {/* HEADER */}
+      <Header title="Gestion des règles" />
+
       {/* WebView */}
       <WebView
         source={{ uri: 'https://ruleweaver-flow.vercel.app/' }}

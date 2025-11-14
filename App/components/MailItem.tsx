@@ -1,14 +1,23 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Mail } from '../services/mailService';
 
 interface MailItemProps {
   mail: Mail;
 }
 
+// Dégradé violet → rose
+const GRADIENT_COLORS = ['#5b36e8', '#af36e8'];
+
 const MailItem: React.FC<MailItemProps> = ({ mail }) => {
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={GRADIENT_COLORS}
+      start={{ x: 0.1, y: 0.8 }}
+      end={{ x: 0.9, y: 0.2 }}
+      style={styles.container as any} // ignore l'erreur TS
+    >
       <Text style={styles.category}>{mail.emoji} {mail.categorie}</Text>
       <Text style={styles.subject}>Sujet : {mail.sujet}</Text>
       <Text style={styles.sender}>
@@ -16,7 +25,7 @@ const MailItem: React.FC<MailItemProps> = ({ mail }) => {
       </Text>
       <Text style={styles.date}>Date : {mail.date}</Text>
       <Text style={styles.summary}>Résumé : {mail.resume}</Text>
-    </View>
+    </LinearGradient>
   );
 };
 
@@ -25,9 +34,6 @@ export default MailItem;
 const styles = StyleSheet.create({
   container: {
     padding: 12,
-    borderBottomWidth: 1,
-    borderColor: '#ddd',
-    backgroundColor: '#d091d6ff',
     borderRadius: 8,
     marginVertical: 6,
     shadowColor: '#000',
@@ -35,9 +41,9 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  category: { fontWeight: 'bold', color: '#444', fontSize: 16 },
-  subject: { color: '#111', marginTop: 4, fontWeight: '600' },
-  sender: { color: '#333', marginTop: 2 },
-  date: { color: '#555', fontSize: 12, marginTop: 2 },
-  summary: { color: '#222', marginTop: 5 },
+  category: { fontWeight: 'bold', color: '#fff', fontSize: 16 },
+  subject: { color: '#fff', marginTop: 4, fontWeight: '600' },
+  sender: { color: '#fff', marginTop: 2 },
+  date: { color: '#eee', fontSize: 12, marginTop: 2 },
+  summary: { color: '#fff', marginTop: 5 },
 });
