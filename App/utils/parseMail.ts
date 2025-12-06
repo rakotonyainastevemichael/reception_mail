@@ -1,27 +1,58 @@
 export function parseMail(raw: any) {
   const text: string = raw.message || '';
-  const lines: string[] = text.split('\n').map((line: string) => line.trim());
 
-  const getLineValue = (prefix: string): string => {
-    const line: string | undefined = lines.find((l: string) => l.startsWith(prefix));
-    return line ? line.replace(prefix, '').trim() : '';
+  const lines = text.split('\n').map(l => l.trim());
+  const get = (p: string) => {
+    const line = lines.find(l => l.startsWith(p));
+    return line ? line.replace(p, '').trim() : '';
   };
 
-  const sujet: string = getLineValue('🟢 SUJET :') || '(Sans sujet)';
-  const senderRaw: string = getLineValue('EXPÉDITEUR :') || '';
-  const destinataireRaw: string = getLineValue('DESTINATAIRE :') || '';
-  const categorie: string = getLineValue('CATÉGORIE :') || '';
-  const date: string = getLineValue('DATE :') || '';
-  const resume: string = getLineValue('RÉSUMÉ :') || '';
-  const link: string = lines.find((l: string) => l.startsWith('http')) || '';
+  const hasPrefixes = lines.some(l => l.startsWith('🟢 SUJET :'));
 
-  // Extraire nom et email de l'expéditeur
-  let senderName: string = senderRaw;
-  let senderEmail: string = 'Non précisé';
-  const match = senderRaw.match(/<(.+)>/);
-  if (match) {
-    senderEmail = match[1];
-    senderName = senderRaw.replace(`<${senderEmail}>`, '').trim() || senderEmail;
+  let sujet = '';
+  let senderRaw = '';
+  let destinataireRaw = '';
+  let categorie = raw.categorie || '';
+  let date = raw.created_at || new Date().toISOString();
+  let resume = '';
+  let link = '';
+
+  if (hasPrefixes) {
+    sujet = get('🟢 SUJET :') || raw.sujet || '(Sans sujet)';
+    senderRaw = get('EXPÉDITEUR :');
+    destinataireRaw = get('DESTINATAIRE :');
+    categorie = get('CATÉGORIE :') || categorie;
+    date = get('DATE :') || date;
+    resume = get('RÉSUMÉ :') || text;
+    link = lines.find(l => l.startsWith('http')) || '';
+  } else {
+    sujet = raw.sujet || '(Sans sujet)';
+    senderRaw =
+      raw.from ||
+      raw.sender ||
+      raw.envelope?.from ||
+      '';
+    destinataireRaw =
+      raw.to ||
+      raw.envelope?.to ||
+      '';
+    resume = text.trim();
+  }
+
+  // ---- Extraction nom + email ----
+  let senderName = '';
+  let senderEmail = '';
+
+  if (senderRaw) {
+    const match = senderRaw.match(/(.+)?<(.+)>/);
+    if (match) {
+      senderName = match[1]?.trim() || match[2]?.trim();
+      senderEmail = match[2]?.trim();
+    } else {
+      // Pas de <email>, on met le mail comme nom et email
+      senderName = senderRaw;
+      senderEmail = senderRaw;
+    }
   }
 
   return {

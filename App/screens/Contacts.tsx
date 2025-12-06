@@ -171,6 +171,7 @@ export default function Contacts({ navigation }: any) {
 
             <View style={styles.row}>
               <TouchableOpacity style={{ flex: 1, marginRight: 6 }} activeOpacity={0.8} onPress={handleSaveContact} disabled={adding}>
+
                 <LinearGradient
                   colors={GRADIENT_COLORS}
                   start={{ x: 0.1, y: 0.8 }}

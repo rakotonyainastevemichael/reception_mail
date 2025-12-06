@@ -1,4 +1,3 @@
-// src/services/mailService.ts
 import { parseMail } from '../utils/parseMail';
 
 export interface Mail {
@@ -22,6 +21,7 @@ export const fetchMails = async (): Promise<Mail[]> => {
     const data = await response.json();
 
     const mails: Mail[] = data.map((m: any) => {
+      console.log("RAW MAIL FROM API:", m); 
       const parsed = parseMail(m); // <-- utilise parseMail pour chaque message
       return {
         emoji: parsed.emoji || '📩',

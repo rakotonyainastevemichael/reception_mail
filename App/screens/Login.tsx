@@ -17,7 +17,6 @@ export default function Login({ navigation }: Props) {
     if (error) Alert.alert('Erreur', error.message);
     else navigation.replace('MailList');
   };
-
   const handleForgotPassword = async () => {
     if (!email) {
       Alert.alert('Erreur', 'Veuillez entrer votre email pour réinitialiser le mot de passe.');

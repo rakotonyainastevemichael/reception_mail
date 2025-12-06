@@ -6,7 +6,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import MailItem from '../components/MailItem';
 import FooterNav from '../components/FooterNav';
-import Header from '../components/Header'; // <-- Import du header
+import Header from '../components/Header'; 
 import { supabase } from '../lib/supabaseClient';
 
 type MailListProps = {
