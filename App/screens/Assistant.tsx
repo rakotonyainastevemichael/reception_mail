@@ -33,19 +33,32 @@ export default function Assistant({ navigation }: any) {
     setResponses(prev => [...prev, `💬 ${input}`]); // message utilisateur
 
     try {
-      const res = await fetch('https://wfw.omega-connect.tech/webhook-test/3b6aa146-0f24-404f-8ed6-cb580c5d053b', {
+      const res = await fetch('https://n8n.projets-omega.net/webhook-test/assistant_mobile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: session.user.id,
           userName,
           question: input,
+          sessionId: session.user.id // <-- ajout obligatoire pour n8n Simple Memory / AI Agent
         }),
       });
 
-      const data = await res.json();
-      if (data.response) setResponses(prev => [...prev, `🤖 ${data.response}`]);
-      else setResponses(prev => [...prev, '🤖 Erreur : aucune réponse reçue du serveur.']);
+      // Lire la réponse brute
+      const text = await res.text();
+      console.log('Réponse brute du webhook:', text);
+
+      // Essayer de parser en JSON
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (err) {
+        console.warn('Impossible de parser le JSON, on utilise le texte brut.');
+        data = { response: text };
+      }
+
+      // Afficher la réponse dans le chat
+      setResponses(prev => [...prev, `🤖 ${data.response || text}`]);
 
     } catch (error) {
       console.error('Erreur lors de la requête vers n8n :', error);
@@ -142,3 +155,4 @@ const styles = StyleSheet.create({
   btnGradient: { paddingVertical:12, paddingHorizontal:20, borderRadius:20, alignItems:'center', justifyContent:'center', shadowColor:'#5b36e8', shadowOpacity:0.25, shadowRadius:10, elevation:3 },
   btnText: { color:'#fff', fontWeight:'bold', fontSize:16 },
 });
+   
